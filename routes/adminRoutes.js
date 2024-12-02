@@ -11,20 +11,43 @@ const Admin = require('../models/Admin');
 const User = require('../models/User');
 const Group = require('../models/Group');
 
-// Nominate a faculty as proctor
+// // Nominate a faculty as proctor
+// router.post('/nominate-proctor', authMiddleware, async (req, res) => {
+//     const { facultyId } = req.body;
+//     try {
+//         const faculty = await Faculty.findById(facultyId);
+//         if (!faculty) {
+//             return res.status(404).json({ success: false, message: 'Faculty not found' });
+//         }
+//         faculty.isProctor = true;
+//         await faculty.save();
+//         res.status(200).json({ success: true, data: faculty });
+//     } catch (error) {
+//         res.status(500).json({ success: false, message: error.message });
+//     }
+// });
+
+// Toggle faculty proctor status (promote/demote)
 router.post('/nominate-proctor', authMiddleware, async (req, res) => {
-    const { facultyId } = req.body;
-    try {
-        const faculty = await Faculty.findById(facultyId);
-        if (!faculty) {
-            return res.status(404).json({ success: false, message: 'Faculty not found' });
-        }
-        faculty.isProctor = true;
-        await faculty.save();
-        res.status(200).json({ success: true, data: faculty });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+  const { facultyId } = req.body;
+  try {
+      const faculty = await Faculty.findById(facultyId);
+      if (!faculty) {
+          return res.status(404).json({ success: false, message: 'Faculty not found' });
+      }
+      // Toggle proctor status
+      faculty.isProctor = !faculty.isProctor;
+      await faculty.save();
+      
+      const statusMessage = faculty.isProctor ? 'promoted to proctor' : 'demoted to professor';
+      res.status(200).json({ 
+          success: true, 
+          message: `Faculty successfully ${statusMessage}`,
+          data: faculty 
+      });
+  } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // Get all faculty

@@ -426,7 +426,7 @@ router.post('/nominateClubLead', authenticateJWT, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    user.role = 'clubLead';
+    user.isClubLead = true;
     await user.save();
     res.json({ success: true, message: 'User nominated as Club Lead successfully' });
   } catch (error) {
