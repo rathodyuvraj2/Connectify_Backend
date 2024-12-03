@@ -150,10 +150,33 @@ router.get('/:facultyId', authenticateJWT, async (req, res) => {
 });
 
 
+// // Mark attendance
+// router.post('/attendance', authenticateJWT, async (req, res) => {
+//   const { studentId, status, date, semester, subject, professorId } = req.body;
+//   // const professorId = req.body.user._id;
+
+//   try {
+//     const attendance = new Attendance({
+//       student: studentId,
+//       professor: professorId,
+//       status,
+//       date,
+//       semester,
+//       subject
+//     });
+//     await attendance.save();
+//     res.status(201).json({ success: true, data: attendance });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// });
+
 // Mark attendance
 router.post('/attendance', authenticateJWT, async (req, res) => {
-  const { studentId, status, date, semester, subject, professorId } = req.body;
+  const { studentId, status, date, semester, subject,subjectCode, professorId } = req.body;
   // const professorId = req.body.user._id;
+  console.log(req.body);
 
   try {
     const attendance = new Attendance({
@@ -162,7 +185,8 @@ router.post('/attendance', authenticateJWT, async (req, res) => {
       status,
       date,
       semester,
-      subject
+      subject,
+      subjectCode
     });
     await attendance.save();
     res.status(201).json({ success: true, data: attendance });
@@ -171,6 +195,7 @@ router.post('/attendance', authenticateJWT, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 
 // Update attendance
@@ -207,9 +232,30 @@ router.get('/attendance', authenticateJWT, async (req, res) => {
   }
 });
 
+// // Update marks
+// router.post('/marks', authenticateJWT, async (req, res) => {
+//   const { studentId, internalExam1, internalExam2, subject, professorId } = req.body;
+//   // const professorId = req.user._id;
+
+//   try {
+//     const marks = new Mark({
+//       student: studentId,
+//       professor: professorId,
+//       internalExam1,
+//       internalExam2,
+//       subject
+//     });
+//     await marks.save();
+//     res.status(201).json({ success: true, data: marks });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// });
+
 // Update marks
 router.post('/marks', authenticateJWT, async (req, res) => {
-  const { studentId, internalExam1, internalExam2, subject, professorId } = req.body;
+  const { studentId, internalExam1, internalExam2, subject,subjectCode,semester, professorId } = req.body;
   // const professorId = req.user._id;
 
   try {
@@ -218,7 +264,9 @@ router.post('/marks', authenticateJWT, async (req, res) => {
       professor: professorId,
       internalExam1,
       internalExam2,
-      subject
+      subject,
+      subjectCode,
+      semester
     });
     await marks.save();
     res.status(201).json({ success: true, data: marks });
@@ -337,7 +385,8 @@ router.post('/attendance/bulk', upload.single('file'), async (req, res) => {
         date: new Date(row.Date),
         subject: row.Subject,
         status: row.Status.toLowerCase(),
-        semester: req.body.semester
+        semester: req.body.semester,
+        subjectCode: row.SubjectCode
       });
 
       return attendance.save();
@@ -372,7 +421,8 @@ router.post('/marks/bulk', upload.single('file'), async (req, res) => {
         subject: row.Subject,
         internalExam1: row['Internal Exam 1'],
         internalExam2: row['Internal Exam 2'],
-        semester: req.body.semester
+        semester: req.body.semester,
+        subjectCode: row.SubjectCode
       });
 
       return marks.save();
