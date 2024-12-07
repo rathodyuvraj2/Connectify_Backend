@@ -12,6 +12,7 @@ const xlsx = require('xlsx');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -480,6 +481,39 @@ router.post('/nominateClubLead', authenticateJWT, async (req, res) => {
     await user.save();
     res.json({ success: true, message: 'User nominated as Club Lead successfully' });
   } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/upload-profile-photo', authenticateJWT, upload.single('image'), async (req, res) => {
+  try {
+    const file = req.file;
+    const facultyId = req.body.facultyId;
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload_stream({
+      folder: 'faculty_profiles',
+    }, async (error, result) => {
+      if (error) {
+        return res.status(500).json({ success: false, message: 'Image upload failed' });
+      }
+
+      // Update faculty profile with new image URL
+      const faculty = await Faculty.findById(facultyId);
+      faculty.profileImage = result.secure_url;
+      await faculty.save();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          imageUrl: result.secure_url,
+          faculty: faculty
+        }
+      });
+    }).end(file.buffer);
+
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

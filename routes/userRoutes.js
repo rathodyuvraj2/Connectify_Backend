@@ -419,6 +419,39 @@ router.delete('/certifications/:certId', authMiddleware, async (req, res) => {
   }
 });
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.post('/upload-profile-photo', authMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    const file = req.file;
+    const userId = req.body.userId;
+
+    const result = await cloudinary.uploader.upload_stream({
+      folder: 'student_profiles',
+    }, async (error, result) => {
+      if (error) {
+        return res.status(500).json({ success: false, message: 'Image upload failed' });
+      }
+
+      const user = await User.findById(userId);
+      user.profilePicture = result.secure_url;
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          imageUrl: result.secure_url,
+          user: user
+        }
+      });
+    }).end(file.buffer);
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 
 module.exports = router;
